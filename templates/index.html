@@ -6,10 +6,89 @@
     body { text-align: center; font-family: Arial; background: #f4f4f4; }
     h1 { margin-top: 30px; }
     img { border: 2px solid #555; margin-top: 20px; }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #message-box {
+      margin: 20px auto;
+      padding: 10px 20px;
+      border-radius: 5px;
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+      width: fit-content;
+      display: none;
+    }
+    .result-box {
+      background: #fff;
+      text-align: left;
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      max-width: 80%;
+      white-space: pre-wrap;
+    }
   </style>
+  <script>
+    async function startCapture() {
+      const button = document.getElementById('captureBtn');
+      const messageBox = document.getElementById('message-box');
+      const emotionBox = document.getElementById('emotion-box');
+      const objectBox = document.getElementById('object-box');
+
+      button.disabled = true;
+      button.innerText = "Capturing (30s)...";
+      messageBox.style.display = "none";
+      emotionBox.innerHTML = "";
+      objectBox.innerHTML = "";
+
+      try {
+        const response = await fetch('/capture');
+        const result = await response.json();
+
+        button.innerText = "Start 30s Capture";
+        button.disabled = false;
+
+        messageBox.innerText = result.message;
+        messageBox.style.display = "block";
+
+        emotionBox.innerHTML = result.emotions.length > 0
+          ? "<strong>Detected Emotions:</strong><br>" + result.emotions.join(', ')
+          : "<strong>Detected Emotions:</strong> None";
+
+        objectBox.innerHTML = result.objects.length > 0
+          ? "<strong>Detected Objects:</strong><br>" + result.objects.join(', ')
+          : "<strong>Detected Objects:</strong> None";
+
+      } catch (error) {
+        console.error("Error:", error);
+        messageBox.innerText = "An error occurred.";
+        messageBox.style.display = "block";
+        button.innerText = "Start 30s Capture";
+        button.disabled = false;
+      }
+    }
+  </script>
 </head>
 <body>
-  <h1>😊 Real-Time Emotion Detection</h1>
+  <h1>😊 Real-Time Emotion & Context-Based Detection</h1>
+
   <img src="{{ url_for('video') }}" width="720" height="540">
+  <br>
+
+  <button id="captureBtn" onclick="startCapture()">Start 30s Capture</button>
+
+  <div id="message-box"></div>
+
+  <div id="emotion-box" class="result-box"></div>
+  <div id="object-box" class="result-box"></div>
 </body>
 </html>
